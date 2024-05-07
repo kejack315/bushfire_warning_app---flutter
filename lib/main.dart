@@ -32,28 +32,32 @@ class _MyHomePageState extends State<MyHomePage> {
   bool darkMode = false;
   bool gps = true;
   double _defaultSliderValue = 25;
+  bool isDark = false;
   List<String> favourites = <String>[
     'Bassendean',
     'Northbridge',
     'Innaloo',
     'Mundaring',
-    'Fremantle'
+    'Fremantle',
   ];
 
-  static const TextStyle optionStyle =
-      TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
+  static const TextStyle headerStyle =
+      TextStyle(fontSize: 24, fontWeight: FontWeight.bold);
+
+  static const TextStyle bodyStyle = TextStyle(fontSize: 18);
 
   Widget _getNavigationBarItem(int index) {
     List<Widget> _widgetOptions = <Widget>[
       Padding(
         padding: const EdgeInsets.all(32),
         child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
+          const Text('SETTINGS', style: headerStyle),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
                 'Dark Mode',
-                style: optionStyle,
+                style: bodyStyle,
               ),
               Switch(
                   value: darkMode,
@@ -67,7 +71,10 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('GPS Tracking', style: optionStyle),
+              const Text(
+                'GPS',
+                style: bodyStyle,
+              ),
               Switch(
                   value: gps,
                   onChanged: (bool value) {
@@ -81,8 +88,8 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Warning Radius (km)',
-                style: optionStyle,
+                'Radius (km)',
+                style: bodyStyle,
               ),
               Slider(
                 value: _defaultSliderValue,
@@ -99,41 +106,84 @@ class _MyHomePageState extends State<MyHomePage> {
           )
         ]),
       ),
-      const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [Icon(Icons.web_outlined)]),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SearchAnchor(
+                  builder: (BuildContext context, SearchController controller) {
+                return SearchBar(
+                  controller: controller,
+                  padding: const MaterialStatePropertyAll<EdgeInsets>(
+                      EdgeInsets.symmetric(horizontal: 16.0)),
+                  onTap: () {
+                    controller.openView();
+                  },
+                  onChanged: (_) {
+                    controller.openView();
+                  },
+                  leading: const Icon(Icons.search),
+                  );
+              }, suggestionsBuilder:
+                      (BuildContext context, SearchController controller) {
+                return List<ListTile>.generate(5, (int index) {
+                  final String item = 'item $index';
+                  return ListTile(
+                    title: Text(item),
+                    onTap: () {
+                      setState(() {
+                        controller.closeView(item);
+                      });
+                    },
+                  );
+                });
+              }),
+            ],
+          )
+        ]),
+      ),
       Padding(
         padding: const EdgeInsets.all(32),
         child: Column(children: [
           const Text(
             'FAVOURITES',
-            style: optionStyle,
+            style: headerStyle,
           ),
           Row(
-            // TODO: Format favourites page to have locations and star icon side by side.
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              ListView.builder(
-                padding: const EdgeInsets.all(12),
-                shrinkWrap: true,
-                itemCount: favourites.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return SizedBox(
-                      height: 50,
-                      child: Center(child: Text(favourites[index])));
-                },
-              ),
-              IconButton(
-                onPressed: _toggleFavourite,
-                icon: const Icon(Icons.star_outline),
+              SizedBox(
+                height: 300,
+                width: 300,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(4),
+                  shrinkWrap: true,
+                  itemCount: favourites.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                              onPressed: _openFavouriteLocation,
+                              child: Text(
+                                favourites[index],
+                                style: bodyStyle,
+                              )),
+                          IconButton(
+                            onPressed: _removeFavourite,
+                            icon: const Icon(Icons.delete_forever_outlined),
+                          ),
+                        ]);
+                  },
+                ),
               ),
             ],
           )
         ]),
       )
     ];
-
-    // .map((e) => Container(padding: EdgeInsets.all(8.0), child: e).toList()
 
     return _widgetOptions[index];
   }
@@ -146,7 +196,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _openSearch() {}
 
-  void _toggleFavourite() {}
+  void _removeFavourite() {}
+
+  void _openFavouriteLocation() {}
+
+  void _darkMode() {
+    final ThemeData themeData = ThemeData(
+        useMaterial3: true,
+        brightness: isDark ? Brightness.dark : Brightness.light);
+  }
 
   @override
   Widget build(BuildContext context) {
